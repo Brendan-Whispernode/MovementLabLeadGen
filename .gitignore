@@ -1,0 +1,26 @@
+# Environment variables
+.env
+
+# Virtual environment
+venv/
+
+# Python cache
+__pycache__/
+*.pyc
+*.pyo
+
+# Database (local only)
+leads.db
+
+# Temporary files
+.tmp/
+
+# Google OAuth tokens
+credentials.json
+token.json
+
+# macOS
+.DS_Store
+
+# Claude Code session files
+.claude/
