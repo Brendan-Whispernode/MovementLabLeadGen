@@ -22,7 +22,8 @@
   <header>
     <h1>Body Freedom Lead Gen</h1>
     <nav id="nav">
-      <button class="active" data-tab="discover">🔍 Discover</button>
+      <button class="active" data-tab="guide">📖 Guide</button>
+      <button data-tab="discover">🔍 Discover</button>
       <button data-tab="queue">📋 Queue</button>
       <button data-tab="scrape">⚡ Scrape</button>
       <button data-tab="score">🎯 Score</button>
@@ -34,8 +35,142 @@
 
   <main>
 
+    <!-- ══════════════════════ GUIDE ══════════════════════ -->
+    <section id="tab-guide" class="tab-panel active">
+      <div class="guide-intro">
+        <div class="section-title">How This Works</div>
+        <p class="guide-intro-text">This tool finds Instagram users who are publicly talking about body pain, movement restriction, or somatic struggle — and turns them into warm outreach leads. Follow the pipeline in order: Discover → Queue → Scrape → Score → Leads. Insights and Strategy are available anytime once you have scored data.</p>
+      </div>
+
+      <div class="guide-steps">
+
+        <div class="guide-step">
+          <div class="guide-step-left">
+            <div class="guide-step-number">1</div>
+            <div class="guide-step-line"></div>
+          </div>
+          <div class="guide-step-body">
+            <div class="guide-step-title">🔍 Discover Posts</div>
+            <p class="guide-step-desc">Enter keywords that describe your ideal client's pain — things like <em>chronic pain, tight hips, body tension, nervous system, somatic</em>. Virlo searches Instagram and returns posts where people are actively discussing these topics. These posts are your lead sources.</p>
+            <div class="guide-tips">
+              <div class="guide-tips-label">Tips</div>
+              <ul>
+                <li>Prioritize posts with high comment counts — more comments = more potential leads</li>
+                <li>Try 3–5 specific keywords per search for the best signal-to-noise ratio</li>
+                <li>"This month" is a good default time range to start</li>
+              </ul>
+            </div>
+          </div>
+        </div>
+
+        <div class="guide-step">
+          <div class="guide-step-left">
+            <div class="guide-step-number">2</div>
+            <div class="guide-step-line"></div>
+          </div>
+          <div class="guide-step-body">
+            <div class="guide-step-title">📋 Queue</div>
+            <p class="guide-step-desc">Review the discovered posts and choose which ones are worth scraping. Not every post is a good lead source — you're looking for posts with authentic, personal engagement, not just viral hype content.</p>
+            <div class="guide-tips">
+              <div class="guide-tips-label">Tips</div>
+              <ul>
+                <li>Aim for 5–15 posts per batch to keep scrape time and cost manageable</li>
+                <li>Look for posts where comments feel personal and vulnerable, not just "great post!"</li>
+                <li>Avoid queuing posts you've already scraped — it creates duplicate leads</li>
+              </ul>
+            </div>
+          </div>
+        </div>
+
+        <div class="guide-step">
+          <div class="guide-step-left">
+            <div class="guide-step-number">3</div>
+            <div class="guide-step-line"></div>
+          </div>
+          <div class="guide-step-body">
+            <div class="guide-step-title">⚡ Scrape</div>
+            <p class="guide-step-desc">Runs an automated scraper (via Apify) across all queued posts and pulls down every comment — username, comment text, and timestamp. This runs in the background; the progress bar updates live. A typical batch of 10 posts takes 2–5 minutes.</p>
+            <div class="guide-tips">
+              <div class="guide-tips-label">Tips</div>
+              <ul>
+                <li>Enable "Fetch reply threads" to detect whether the creator already replied to a commenter (adds scrape time)</li>
+                <li>Max 500 comments scraped per post</li>
+                <li>You can navigate away — the scrape continues in the background</li>
+              </ul>
+            </div>
+          </div>
+        </div>
+
+        <div class="guide-step">
+          <div class="guide-step-left">
+            <div class="guide-step-number">4</div>
+            <div class="guide-step-line"></div>
+          </div>
+          <div class="guide-step-body">
+            <div class="guide-step-title">🎯 Score</div>
+            <p class="guide-step-desc">Claude reads every scraped comment and scores it 1–3 based on how clearly the person expresses personal pain or struggle. It also generates a personalized DM draft for warm and hot leads.</p>
+            <div class="guide-tips">
+              <div class="guide-tips-label">Score key</div>
+              <ul>
+                <li><span class="score-hot">● 3 — Hot</span> — Direct personal struggle (body tension, pain, disconnection, movement avoidance)</li>
+                <li><span class="score-warm">● 2 — Warm</span> — Mild resonance or curiosity, no clear personal pain expressed</li>
+                <li><span class="score-cold">● 1 — Cold</span> — Generic, emoji-only, spam, or unrelated</li>
+              </ul>
+            </div>
+          </div>
+        </div>
+
+        <div class="guide-step">
+          <div class="guide-step-left">
+            <div class="guide-step-number">5</div>
+            <div class="guide-step-line"></div>
+          </div>
+          <div class="guide-step-body">
+            <div class="guide-step-title">👥 Leads</div>
+            <p class="guide-step-desc">Browse all scored leads, filter by score or status, and manage your outreach. Edit Claude's DM drafts before sending, then update each lead's status as you make contact.</p>
+            <div class="guide-tips">
+              <div class="guide-tips-label">Tips</div>
+              <ul>
+                <li>Status flow: New → Contacted → Responded → Not Relevant</li>
+                <li>Start with Score 3 (Hot) leads — they're the most likely to convert</li>
+              </ul>
+            </div>
+          </div>
+        </div>
+
+        <div class="guide-step">
+          <div class="guide-step-left">
+            <div class="guide-step-number">6</div>
+            <div class="guide-step-line"></div>
+          </div>
+          <div class="guide-step-body">
+            <div class="guide-step-title">💡 Insights</div>
+            <p class="guide-step-desc">Once you have 30–50 scored leads, run a market intelligence analysis. Claude synthesizes all the comments to identify exact language, recurring pain points, emotional signals, and content hooks your audience uses.</p>
+            <div class="guide-tips">
+              <div class="guide-tips-label">Tips</div>
+              <ul>
+                <li>Run after each new scrape batch to keep insights fresh</li>
+                <li>Use "Specific orbit" scope to analyze one competitor's audience in isolation</li>
+              </ul>
+            </div>
+          </div>
+        </div>
+
+        <div class="guide-step guide-step-last">
+          <div class="guide-step-left">
+            <div class="guide-step-number">7</div>
+          </div>
+          <div class="guide-step-body">
+            <div class="guide-step-title">🗺️ Strategy</div>
+            <p class="guide-step-desc">Generated automatically after an Insights run. Contains fully-formed content pillars, video concepts, hooks, and a posting strategy tailored to the exact language and pain points your audience uses.</p>
+          </div>
+        </div>
+
+      </div>
+    </section>
+
     <!-- ══════════════════════ DISCOVER ══════════════════════ -->
-    <section id="tab-discover" class="tab-panel active">
+    <section id="tab-discover" class="tab-panel">
       <div class="section-title">Discover Posts via Virlo Orbit</div>
 
       <form id="discover-form">
