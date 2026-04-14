@@ -356,6 +356,24 @@ async def score_status():
     return _ok(**scorer.get_score_status())
 
 
+@app.post("/api/score/follow-drafts/run")
+async def run_follow_drafts():
+    if scorer.get_follow_draft_status()["running"]:
+        raise HTTPException(status_code=409, detail="Follow draft generation already running")
+    asyncio.create_task(scorer.run_follow_draft_generation())
+    return _ok(status="started")
+
+
+@app.get("/api/score/follow-drafts/status")
+async def follow_drafts_status():
+    return _ok(**scorer.get_follow_draft_status())
+
+
+@app.get("/api/leads/missing-follow-drafts/count")
+async def count_missing_follow_drafts():
+    return _ok(count=db.count_leads_missing_follow_draft())
+
+
 # ════════════════════════════════════════════════════════════════════════════
 # Stage 5 — Leads
 # ════════════════════════════════════════════════════════════════════════════
@@ -370,6 +388,7 @@ async def get_leads(score: int | None = None, status: str | None = None,
 
 class LeadPatch(BaseModel):
     dm_draft: str | None = None
+    dm_draft_follow: str | None = None
     status: str | None = None
 
 

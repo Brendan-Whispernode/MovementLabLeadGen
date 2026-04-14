@@ -82,6 +82,7 @@ def init_db():
         for col, definition in [
             ("lead_type", "TEXT DEFAULT 'organic'"),
             ("creator_replied", "INTEGER DEFAULT 0"),
+            ("dm_draft_follow", "TEXT"),
         ]:
             try:
                 conn.execute(f"ALTER TABLE leads ADD COLUMN {col} {definition}")
@@ -248,19 +249,40 @@ def count_unscored_leads():
         ).fetchone()[0]
 
 
+def get_leads_missing_follow_draft(limit: int = 20):
+    with db() as conn:
+        rows = conn.execute("""
+            SELECT l.*, p.creator_handle
+            FROM leads l
+            LEFT JOIN posts p ON l.source_post_url = p.post_url
+            WHERE l.score IN (2, 3) AND l.dm_draft_follow IS NULL
+            ORDER BY l.created_at
+            LIMIT ?
+        """, (limit,)).fetchall()
+        return [dict(r) for r in rows]
+
+
+def count_leads_missing_follow_draft():
+    with db() as conn:
+        return conn.execute(
+            "SELECT COUNT(*) FROM leads WHERE score IN (2, 3) AND dm_draft_follow IS NULL"
+        ).fetchone()[0]
+
+
 def update_lead_score(lead_id: int, score: int, reasoning: str, dm_draft: str,
-                      lead_type: str | None = None):
+                      lead_type: str | None = None, dm_draft_follow: str | None = None):
     with db() as conn:
         conn.execute("""
             UPDATE leads SET score = ?, score_reasoning = ?, dm_draft = ?,
                              lead_type = COALESCE(?, lead_type),
+                             dm_draft_follow = COALESCE(?, dm_draft_follow),
                              updated_at = CURRENT_TIMESTAMP
             WHERE id = ?
-        """, (score, reasoning, dm_draft, lead_type, lead_id))
+        """, (score, reasoning, dm_draft, lead_type, dm_draft_follow, lead_id))
 
 
 def update_lead(lead_id: int, **kwargs):
-    allowed = {"dm_draft", "status"}
+    allowed = {"dm_draft", "dm_draft_follow", "status"}
     fields = {k: v for k, v in kwargs.items() if k in allowed}
     if not fields:
         return

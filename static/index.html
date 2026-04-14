@@ -273,6 +273,23 @@
       </div>
 
       <div id="scored-preview"></div>
+
+      <div id="follow-draft-cta" style="margin-top:24px">
+        <hr class="divider" style="margin:16px 0" />
+        <div class="score-meta">
+          <h3><span id="follow-draft-missing-count">…</span> leads missing follow draft</h3>
+          <button class="btn btn-ghost" id="follow-draft-run-btn">Generate Follow Drafts</button>
+        </div>
+        <div id="follow-draft-progress-area" style="display:none">
+          <div style="display:flex;justify-content:space-between;font-size:13px;margin-bottom:4px">
+            <span><span class="spinner"></span>Generating follow drafts…</span>
+            <span id="follow-draft-progress-text" style="color:var(--text-muted)"></span>
+          </div>
+          <div class="progress-wrap">
+            <div class="progress-bar" id="follow-draft-progress-bar" style="width:0%"></div>
+          </div>
+        </div>
+      </div>
     </section>
 
     <!-- ══════════════════════ LEADS ══════════════════════ -->

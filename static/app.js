@@ -585,6 +585,14 @@ async function loadScoreTab() {
   const unscored = (leads.leads || []).filter(l => l.score == null).length;
   $("#unscored-count").textContent = unscored;
   if (data.running) startScorePolling();
+
+  // Follow draft count + status
+  try {
+    const fd = await api("GET", "/api/leads/missing-follow-drafts/count");
+    $("#follow-draft-missing-count").textContent = fd.count;
+  } catch (_) {}
+  const fdStatus = await api("GET", "/api/score/follow-drafts/status").catch(() => ({}));
+  if (fdStatus.running) startFollowDraftPolling();
 }
 
 $("#score-run-btn").addEventListener("click", async () => {
@@ -628,6 +636,58 @@ function renderScoreStatus(data) {
     const pct = data.total > 0 ? Math.round((data.processed / data.total) * 100) : 0;
     $("#score-progress-bar").style.width = pct + "%";
     $("#score-progress-text").textContent = `${data.processed} / ${data.total}`;
+  } else {
+    if (data.error) {
+      area.style.display = "block";
+      area.innerHTML = `<div class="error-msg">Error: ${esc(data.error)}</div>`;
+    } else {
+      area.style.display = "none";
+    }
+  }
+}
+
+// ── Follow draft generation ───────────────────────────────────────────────
+
+let followDraftPollTimer = null;
+
+$("#follow-draft-run-btn").addEventListener("click", async () => {
+  const btn = $("#follow-draft-run-btn");
+  btn.disabled = true;
+  try {
+    await api("POST", "/api/score/follow-drafts/run");
+    toast("Follow draft generation started");
+    startFollowDraftPolling();
+  } catch (err) {
+    toast(err.message, "error");
+    btn.disabled = false;
+  }
+});
+
+function startFollowDraftPolling() {
+  clearInterval(followDraftPollTimer);
+  followDraftPollTimer = setInterval(refreshFollowDraftStatus, 3000);
+}
+
+async function refreshFollowDraftStatus() {
+  try {
+    const data = await api("GET", "/api/score/follow-drafts/status");
+    renderFollowDraftStatus(data);
+    if (!data.running) {
+      clearInterval(followDraftPollTimer);
+      $("#follow-draft-run-btn").disabled = false;
+      const fd = await api("GET", "/api/leads/missing-follow-drafts/count").catch(() => ({ count: "?" }));
+      $("#follow-draft-missing-count").textContent = fd.count;
+    }
+  } catch (_) {}
+}
+
+function renderFollowDraftStatus(data) {
+  const area = $("#follow-draft-progress-area");
+  if (data.running) {
+    area.style.display = "block";
+    const pct = data.total > 0 ? Math.round((data.processed / data.total) * 100) : 0;
+    $("#follow-draft-progress-bar").style.width = pct + "%";
+    $("#follow-draft-progress-text").textContent = `${data.processed} / ${data.total}`;
   } else {
     if (data.error) {
       area.style.display = "block";
@@ -715,12 +775,13 @@ function renderLeads(leads) {
     });
   });
 
-  // DM draft autosave
+  // DM draft autosave (handles both dm_draft and dm_draft_follow via data-field)
   $$(".dm-textarea").forEach(ta => {
     ta.addEventListener("blur", async () => {
       const leadId = ta.dataset.leadId;
+      const field = ta.dataset.field;
       try {
-        await api("PATCH", `/api/leads/${leadId}`, { dm_draft: ta.value });
+        await api("PATCH", `/api/leads/${leadId}`, { [field]: ta.value });
       } catch (err) {
         toast("Save failed: " + err.message, "error");
       }
@@ -741,13 +802,17 @@ function renderLeads(leads) {
     });
   });
 
-  // Instagram DM button
+  // Instagram DM button — opens ig.me/m/{username} and copies the associated draft
   $$(".ig-dm-btn").forEach(btn => {
     btn.addEventListener("click", () => {
       const username = btn.dataset.username;
-      navigator.clipboard.writeText("@" + username).catch(() => {});
-      window.open("https://www.instagram.com/direct/new/", "_blank");
-      toast(`@${username} copied — opening IG DMs`);
+      const leadId = btn.dataset.leadId;
+      const field = btn.dataset.field;
+      const ta = document.querySelector(`.dm-textarea[data-lead-id="${leadId}"][data-field="${field}"]`);
+      const draft = ta ? ta.value : "";
+      if (draft) navigator.clipboard.writeText(draft).catch(() => {});
+      window.open(`https://ig.me/m/${username}`, "_blank");
+      toast(`Draft copied — opening DM with @${username}`);
     });
   });
 
@@ -785,17 +850,26 @@ function leadCard(l) {
       <div class="lead-body">
         <blockquote class="lead-comment">${esc(l.comment_text)}</blockquote>
         ${l.score_reasoning ? `<div class="lead-reasoning">${esc(l.score_reasoning)}</div>` : ""}
-        ${l.dm_draft !== null && l.score !== 1 ? `
-          <div class="lead-dm-label">DM Draft</div>
-          <div class="lead-dm-draft">
-            <textarea class="dm-textarea" data-lead-id="${l.id}" rows="3">${esc(l.dm_draft || "")}</textarea>
+        ${l.score !== 1 ? `
+          <div class="lead-dm-block">
+            <div class="lead-dm-label">DM Draft — Sales</div>
+            <div class="lead-dm-draft">
+              <textarea class="dm-textarea" data-lead-id="${l.id}" data-field="dm_draft" rows="3">${esc(l.dm_draft || "")}</textarea>
+            </div>
+            <button class="btn btn-sm ig-dm-btn" data-username="${esc(l.commenter_username)}" data-lead-id="${l.id}" data-field="dm_draft">Open IG DM →</button>
+          </div>
+          <div class="lead-dm-block">
+            <div class="lead-dm-label">DM Draft — Follow</div>
+            <div class="lead-dm-draft">
+              <textarea class="dm-textarea" data-lead-id="${l.id}" data-field="dm_draft_follow" rows="3">${esc(l.dm_draft_follow || "")}</textarea>
+            </div>
+            <button class="btn btn-sm ig-dm-btn" data-username="${esc(l.commenter_username)}" data-lead-id="${l.id}" data-field="dm_draft_follow">Open IG DM →</button>
           </div>
         ` : ""}
         <div class="lead-actions">
           <select class="status-select" data-lead-id="${l.id}">
             ${statusOpts.map(s => `<option value="${s}" ${l.status === s ? "selected" : ""}>${s.replace("_", " ")}</option>`).join("")}
           </select>
-          <button class="btn btn-sm ig-dm-btn" data-username="${esc(l.commenter_username)}">Open IG DM</button>
           <button class="btn btn-sm btn-ghost manychat-btn">ManyChat</button>
           <button class="btn btn-sm btn-ghost hide-btn">Hide</button>
           ${l.profile_url ? `<a href="${esc(l.profile_url)}" target="_blank" class="btn btn-sm btn-ghost">Profile ↗</a>` : ""}
